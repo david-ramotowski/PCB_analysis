@@ -1,0 +1,30 @@
+---
+title: "Congener_profile_plots"
+author: "David Ramotowski"
+date: "2023-01-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(plotly)
+```
+
+Read excel file with data on 209 congeners, convert to % abundance, pivot to long format
+```{r}
+average_concentration_dry <- read_xlsx("NBH_sed_PCBs.xlsx", sheet = "average_concentration_dry") %>% as.data.frame() %>% pivot_longer(cols = -congener, names_to = "sample_ID", values_to = "concentration") %>% dplyr::group_by(sample_ID) %>% dplyr::mutate(percentage = concentration/sum(concentration))
+```
+
+Plot PCB congener profile
+```{r}
+congener_profile_plot <- plot_ly(data = average_concentration_dry, x = ~congener, y = ~percentage, type = "bar", split = ~sample_ID) %>% layout(barmode = 'group') %>% layout(title = 'NBH PCB Congener Profile', xaxis = list(title = 'Congener', categoryorder = "trace"))
+
+congener_profile_plot
+```
+
+
