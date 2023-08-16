@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 NBH_sed_PCBs.xlsx
+AVL_PUF_data.xlsx
+NBH_PUF_data.xlsx
+NBH_congener_profile_plotly.html

@@ -1,0 +1,37 @@
+---
+title: "Congener_profile_plots"
+author: "David Ramotowski"
+date: "2023-01-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(plotly)
+```
+
+Read excel file with data on 209 congeners, convert to % abundance, pivot to long format:
+
+Altavista
+```{r}
+AVL_PUF_wet <- read_xlsx("AVL_PUF_data.xlsx", sheet = "PCBs per g sed (wet)") %>% as.data.frame() %>% pivot_longer(cols = -congener, names_to = "sample_ID", values_to = "concentration") %>% dplyr::group_by(sample_ID) %>% dplyr::mutate(percentage = concentration/sum(concentration))
+```
+
+New Bedford
+```{r}
+NBH_PUF_wet <- read_xlsx("NBH_PUF_data.xlsx", sheet = "Total_PCBs_per_g") %>% as.data.frame() %>% pivot_longer(cols = -congener, names_to = "sample_ID", values_to = "concentration") %>% dplyr::group_by(sample_ID) %>% dplyr::mutate(percentage = concentration/sum(concentration))
+```
+
+Plot airborne PCB congener profiles
+```{r}
+AVL_PUF_congener_profile_plot <- plot_ly(data = AVL_PUF_wet, x = ~congener, y = ~percentage, type = "bar", split = ~sample_ID) %>% layout(barmode = 'group') %>% layout(title = 'AVL Airborne PCB Congener Profile', xaxis = list(title = 'Congener', categoryorder = "trace"))
+
+AVL_PUF_congener_profile_plot
+```
+
+
