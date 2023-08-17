@@ -13,14 +13,28 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readxl)
 library(plotly)
+library(plyr)
 ```
 
 Read excel file with data on 209 congeners, convert to % abundance, pivot to long format:
 
 Altavista
 ```{r}
-AVL_PUF_wet <- read_xlsx("AVL_PUF_data.xlsx", sheet = "PCBs per g sed (wet)") %>% as.data.frame() %>% pivot_longer(cols = -congener, names_to = "sample_ID", values_to = "concentration") %>% dplyr::group_by(sample_ID) %>% dplyr::mutate(percentage = concentration/sum(concentration))
+AVL_PUF_wet <- read_xlsx("AVL_PUF_data.xlsx", sheet = "PCBs per g sed (wet)") %>% as.data.frame() %>% pivot_longer(cols = -congener, names_to = "sample_ID", values_to = "concentration") %>% dplyr::group_by(sample_ID) %>% dplyr::mutate(percentage = concentration/sum(concentration)) %>% dplyr::mutate(sd = sd(percentage))
 ```
+
+```{r}
+AVL_PUF_wet2 <- read_xlsx("AVL_PUF_data.xlsx", sheet = "PCBs per g sed (wet)") %>% as.data.frame()
+```
+
+```{r}
+names(AVL_PUF_wet2) = gsub (pattern = "_1", replacement = "", x = names(AVL_PUF_wet2))
+names(AVL_PUF_wet2) = gsub (pattern = "_2", replacement = "", x = names(AVL_PUF_wet2))
+names(AVL_PUF_wet2) = gsub (pattern = "_3", replacement = "", x = names(AVL_PUF_wet2))
+
+AVL_PUF_wet2 <- pivot_longer(AVL_PUF_wet2, cols = -congener, names_to = "sample_ID", values_to = "concentration") %>% dplyr::group_by(sample_ID) %>% dplyr::mutate(percentage = concentration/sum(concentration)) %>% dplyr::mutate(sd = sd(percentage))
+```
+
 
 New Bedford
 ```{r}
@@ -29,7 +43,16 @@ NBH_PUF_wet <- read_xlsx("NBH_PUF_data.xlsx", sheet = "Total_PCBs_per_g") %>% as
 
 Plot airborne PCB congener profiles
 ```{r}
-AVL_PUF_congener_profile_plot <- plot_ly(data = AVL_PUF_wet, x = ~congener, y = ~percentage, type = "bar", split = ~sample_ID) %>% layout(barmode = 'group') %>% layout(title = 'AVL Airborne PCB Congener Profile', xaxis = list(title = 'Congener', categoryorder = "trace"))
+AVL_PUF_congener_profile_plot <- plot_ly(data = AVL_PUF_wet2, x = ~congener, y = ~percentage, type = "bar", split = ~sample_ID) %>% layout(barmode = 'group') %>% layout(title = 'AVL Airborne PCB Congener Profile', xaxis = list(title = 'Congener', categoryorder = "trace"))
+
+AVL_PUF_congener_profile_plot
+```
+
+
+
+Plot airborne PCB congener profiles with error bars
+```{r}
+AVL_PUF_congener_profile_plot <- plot_ly(data = AVL_PUF_wet2, x = ~congener, y = ~percentage, type = "bar", split = ~sample_ID, error_y = ~list(array = AVL_PUF_wet$sd, color = '000000')) %>% layout(barmode = 'group') %>% layout(title = 'AVL Airborne PCB Congener Profile', xaxis = list(title = 'Congener', categoryorder = "trace"))
 
 AVL_PUF_congener_profile_plot
 ```
